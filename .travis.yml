@@ -1,0 +1,20 @@
+sudo: requiered
+services:
+    - docker
+
+before_install:
+    - docker build -t arkan9el/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true arkan9el/react-test npm test
+
+after_success:
+    - docker build -t arkan9el/multi-client ./client
+    - docker build -t arkan9el/multi-nginx ./nginx
+    - docker build -t arkan9el/multi-server ./server
+    - docker build -t arkan9el/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push arkan9el/multi-client
+    - docker push arkan9el/multi-nginx
+    - docker push arkan9el/multi-server
+    - docker push arkan9el/multi-worker
